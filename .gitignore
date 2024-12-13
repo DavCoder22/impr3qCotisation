@@ -1,0 +1,44 @@
+# Ignorar archivos y directorios generados por Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pytest_cache/
+.env
+.venv/
+venv/
+
+# Ignorar archivos y directorios generados por el frontend
+node_modules/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Ignorar archivos de configuración de Supabase
+supabase/
+
+# Ignorar archivos de configuración de IDEs y editores
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignorar archivos de sistema operativo
+.DS_Store
+Thumbs.db
+
+# Ignorar archivos de compilación y construcción
+dist/
+build/
+*.log
+
+# Ignorar archivos de pruebas
+coverage/
+.coverage
+.coverage.*
+.cache
+
+# Ignorar archivos de documentación
+docs/

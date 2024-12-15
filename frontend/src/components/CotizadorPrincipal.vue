@@ -84,7 +84,6 @@ export default {
         telefono: "",
         nombre: "",
         whatsapp: "",
-        correo: ""
       },
       error: null
     };
@@ -104,9 +103,11 @@ export default {
       this.showModal = true;
     },
     autocompletarCliente() {
-      this.cliente.nombre = this.cliente.email;
+      this.cliente.nombre = this.extractNameFromEmail(this.cliente.email);
       this.cliente.whatsapp = this.cliente.telefono;
-      this.cliente.correo = this.cliente.email;
+    },
+    extractNameFromEmail(email) {
+      return email.split('@')[0];
     },
     async enviarPedido() {
       if (!this.cotizacion) {
@@ -175,7 +176,6 @@ export default {
             email: this.cliente.email,
             telefono: this.cliente.telefono,
             whatsapp: this.cliente.whatsapp,
-            correo: this.cliente.correo
           }]);
 
         if (errorNuevoCliente) {

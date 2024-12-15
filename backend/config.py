@@ -10,7 +10,6 @@ COSTOS_FILAMENTO = {
 
 # Configuración de impresión
 COSTO_POR_HORA = 0.24  # Costo por hora de impresión
-VELOCIDAD_IMPRESION_ESTANDAR = 50  # Velocidad estándar para cálculos iniciales en mm/s
 
 # Configuración de acabados
 COSTO_ACABADOS = 10.0  # Costo fijo por acabados

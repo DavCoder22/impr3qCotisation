@@ -1,21 +1,16 @@
-from config import COSTOS_FILAMENTO, COSTO_POR_HORA, COSTO_ACABADOS, PORCENTAJE_GANANCIA, PORCENTAJE_IMPUESTO, COSTO_ENVIO_UNIVERSIDAD
-
-def solicitar_dato(mensaje, tipo, condicion=lambda x: True):
-    while True:
-        try:
-            valor = tipo(input(mensaje))
-            if not condicion(valor):
-                raise ValueError("Valor no válido.")
-            return valor
-        except ValueError as e:
-            print(f"Dato inválido. Intente nuevamente. ({e})")
+from config import COSTOS_FILAMENTO, COSTO_POR_HORA, COSTO_ACABADOS, PORCENTAJE_GANANCIA, PORCENTAJE_IMPUESTO
 
 def cotizar(volumen, peso, tiempo, tipo_filamento, acabados, envio):
     # Convertir el peso a entero
     peso = int(peso)
 
+    # Validar que el tipo de filamento sea válido
+    if tipo_filamento not in COSTOS_FILAMENTO:
+        raise ValueError(f"Tipo de filamento no válido: {tipo_filamento}")
+
     # Calcular costo de material
-    costo_filamento_kg = COSTOS_FILAMENTO.get(tipo_filamento, 0)
+    costo_filamento_kg = COSTOS_FILAMENTO[tipo_filamento]
+    precio_filamento_gramo = costo_filamento_kg / 1000  # Precio por gramo
     costo_material = (peso / 1000) * costo_filamento_kg
 
     # Calcular costo de impresión
@@ -39,7 +34,7 @@ def cotizar(volumen, peso, tiempo, tipo_filamento, acabados, envio):
     return {
         "volumen_total": volumen,
         "peso_material": peso,
-        "tiempo_Impresion": tiempo,
+        "tiempo_impresion": tiempo,
         "costo_material": round(costo_material, 2),
         "costo_impresion": round(costo_impresion, 2),
         "costo_terminados": round(costo_terminados, 2),
@@ -47,5 +42,6 @@ def cotizar(volumen, peso, tiempo, tipo_filamento, acabados, envio):
         "ganancia": round(ganancia, 2),
         "impuesto": round(impuesto, 2),
         "costo_envio": round(envio, 2),
-        "total_final": round(total, 2)
+        "total_final": round(total, 2),
+        "precio_filamento_gramo": round(precio_filamento_gramo, 2)  # Añadir este campo
     }

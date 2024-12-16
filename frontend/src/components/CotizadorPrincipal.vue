@@ -162,9 +162,9 @@
               </div>
             </div>
 
-            <p>Subtotal: ${{ cotizacion.subtotal.toFixed(2) }}</p>
-            <p>Costo de envío: ${{ cotizacion.costo_envio.toFixed(2) }}</p>
-            <p>Total a pagar: ${{ cotizacion.total_final.toFixed(2) }}</p>
+            <p>Subtotal: ${{ cotizacion ? cotizacion.subtotal.toFixed(2) : '0.00' }}</p>
+            <p>Costo de envío: ${{ cotizacion ? cotizacion.costo_envio.toFixed(2) : '0.00' }}</p>
+            <p>Total a pagar: ${{ cotizacion ? cotizacion.total_final.toFixed(2) : '0.00' }}</p>
 
             <div class="field is-grouped">
               <div class="control">

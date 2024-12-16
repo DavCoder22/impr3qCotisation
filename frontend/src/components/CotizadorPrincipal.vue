@@ -1,63 +1,183 @@
 <template>
-  <div>
-    <h1>Cotizador de Impresión 3D</h1>
-    <form @submit.prevent="cotizar">
-      <label>Volumen total (cm³):</label>
-      <input type="number" v-model.number="form.volumen" required />
+  <div class="container">
+    <h1 class="title is-1 has-text-centered">Cotizador de Impresión 3D</h1>
+    <form @submit.prevent="cotizar" class="form">
+      <div class="field">
+        <label class="label">Ancho (cm):</label>
+        <div class="control">
+          <input type="number" v-model.number="form.ancho" required @input="calcularVolumen" class="input">
+        </div>
+      </div>
 
-      <label>Peso material (g):</label>
-      <input type="number" v-model.number="form.peso" required />
+      <div class="field">
+        <label class="label">Alto (cm):</label>
+        <div class="control">
+          <input type="number" v-model.number="form.alto" required @input="calcularVolumen" class="input">
+        </div>
+      </div>
 
-      <label>Tiempo de impresión (horas):</label>
-      <input type="number" v-model.number="form.tiempo" required />
+      <div class="field">
+        <label class="label">Profundidad (cm):</label>
+        <div class="control">
+          <input type="number" v-model.number="form.profundidad" required @input="calcularVolumen" class="input">
+        </div>
+      </div>
 
-      <label>Tipo de filamento:</label>
-      <select v-model="form.tipo_filamento" required>
-        <option value="pla">PLA</option>
-        <option value="ptge">PTGE</option>
-        <option value="abs">ABS</option>
-        <option value="tpu">TPU</option>
-      </select>
+      <div class="field">
+        <label class="label">Volumen total (cm³):</label>
+        <div class="control">
+          <input type="number" v-model.number="form.volumen" required readonly class="input">
+        </div>
+      </div>
 
-      <label>¿Requiere acabados?</label>
-      <select v-model="form.acabados" required>
-        <option value="true">Sí</option>
-        <option value="false">No</option>
-      </select>
+      <div class="field">
+        <label class="label">Peso material (g):</label>
+        <div class="control">
+          <input type="number" v-model.number="form.peso" required class="input">
+        </div>
+      </div>
 
-      <label>Costo de envío:</label>
-      <input type="number" v-model.number="form.envio" required />
+      <div class="field">
+        <label class="label">Tiempo de impresión (horas):</label>
+        <div class="control">
+          <input type="number" v-model.number="form.tiempo" required class="input">
+        </div>
+      </div>
 
-      <button type="submit">Calcular Cotización</button>
+      <div class="field">
+        <label class="label">Tipo de filamento:</label>
+        <div class="control">
+          <div class="select">
+            <select v-model="form.tipo_filamento" required class="input">
+              <option value="pla">PLA</option>
+              <option value="ptge">PTGE</option>
+              <option value="abs">ABS</option>
+              <option value="tpu">TPU</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">¿Requiere acabados?</label>
+        <div class="control">
+          <div class="select">
+            <select v-model="form.acabados" required @change="toggleAcabados" class="input">
+              <option value="true">Sí</option>
+              <option value="false">No</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Costo de envío:</label>
+        <div class="control">
+          <input type="number" v-model.number="form.envio" required class="input">
+        </div>
+      </div>
+
+      <div v-if="form.acabados === 'true'" class="acabados-fields">
+        <div class="field">
+          <label class="label">Duración de pintado (horas):</label>
+          <div class="control">
+            <input type="number" v-model.number="form.duracion_pintado" required class="input">
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Tipo de acabado:</label>
+          <div class="control">
+            <div class="select">
+              <select v-model="form.tipo_acabado" required class="input">
+                <option value="mate">Mate</option>
+                <option value="brillante">Brillante</option>
+                <option value="texturizado">Texturizado</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Número de colores:</label>
+          <div class="control">
+            <input type="number" v-model.number="form.numero_colores" required class="input">
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Dificultad de acceso:</label>
+          <div class="control">
+            <div class="select">
+              <select v-model="form.dificultad_acceso" required class="input">
+                <option value="bajo">Bajo</option>
+                <option value="medio">Medio</option>
+                <option value="alto">Alto</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field is-grouped is-grouped-centered">
+        <div class="control">
+          <button type="submit" class="button is-primary">Calcular Cotización</button>
+        </div>
+        <div class="control">
+          <button type="button" @click="resetForm" class="button is-link">Cancelar</button>
+        </div>
+      </div>
     </form>
 
-    <div v-if="cotizacion">
-      <h2>Resultado de la Cotización</h2>
+    <div v-if="cotizacion" class="box">
+      <h2 class="subtitle">Resultado de la Cotización</h2>
       <p>Subtotal: ${{ cotizacion.subtotal.toFixed(2) }}</p>
-      <button @click="confirmarPedido">Confirmación de Pedido</button>
+      <p>Costo de envío: ${{ cotizacion.costo_envio.toFixed(2) }}</p>
+      <p>Total: ${{ cotizacion.total_final.toFixed(2) }}</p>
+      <button @click="confirmarPedido" class="button is-success">Confirmación de Pedido</button>
     </div>
 
-    <div v-if="error">
+    <div v-if="error" class="notification is-danger">
       <p>Error: {{ error }}</p>
     </div>
 
     <!-- Modal para confirmar pedido -->
-    <div v-if="showModal" class="modal">
+    <div v-if="showModal" class="modal is-active">
+      <div class="modal-background"></div>
       <div class="modal-content">
-        <h2>Confirmar Pedido</h2>
-        <form @submit.prevent="enviarPedido">
-          <label>Correo:</label>
-          <input type="email" v-model="cliente.email" required @input="autocompletarCliente" />
+        <div class="box">
+          <h2 class="subtitle">Confirmar Pedido</h2>
+          <form @submit.prevent="enviarPedido">
+            <div class="field">
+              <label class="label">Correo:</label>
+              <div class="control">
+                <input type="email" v-model="cliente.email" required @input="autocompletarCliente" class="input">
+              </div>
+            </div>
 
-          <label>Teléfono:</label>
-          <input type="text" v-model="cliente.telefono" required @input="autocompletarCliente" />
+            <div class="field">
+              <label class="label">Teléfono:</label>
+              <div class="control">
+                <input type="text" v-model="cliente.telefono" required @input="autocompletarCliente" class="input">
+              </div>
+            </div>
 
-          <p>Total a pagar: ${{ totalConIVA.toFixed(2) }}</p>
+            <p>Subtotal: ${{ cotizacion.subtotal.toFixed(2) }}</p>
+            <p>Costo de envío: ${{ cotizacion.costo_envio.toFixed(2) }}</p>
+            <p>Total a pagar: ${{ cotizacion.total_final.toFixed(2) }}</p>
 
-          <button type="submit">Enviar Pedido</button>
-          <button type="button" @click="showModal = false">Cancelar</button>
-        </form>
+            <div class="field is-grouped">
+              <div class="control">
+                <button type="submit" class="button is-link">Enviar Pedido</button>
+              </div>
+              <div class="control">
+                <button type="button" @click="showModal = false" class="button is-link is-light">Cancelar</button>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
+      <button class="modal-close is-large" @click="showModal = false" aria-label="close"></button>
     </div>
   </div>
 </template>
@@ -70,12 +190,19 @@ export default {
   data() {
     return {
       form: {
-        volumen: "",
+        ancho: "",
+        alto: "",
+        profundidad: "",
+        volumen: 0,
         peso: "",
         tiempo: "",
         tipo_filamento: "pla",
         acabados: "false",
-        envio: "",
+        envio: 0,
+        duracion_pintado: 0,
+        tipo_acabado: "mate",
+        numero_colores: 0,
+        dificultad_acceso: "bajo"
       },
       cotizacion: null,
       showModal: false,
@@ -89,6 +216,34 @@ export default {
     };
   },
   methods: {
+    calcularVolumen() {
+      this.form.volumen = this.form.ancho * this.form.alto * this.form.profundidad;
+    },
+    toggleAcabados() {
+      if (this.form.acabados === "false") {
+        this.form.duracion_pintado = 0;
+        this.form.tipo_acabado = "mate";
+        this.form.numero_colores = 0;
+        this.form.dificultad_acceso = "bajo";
+      }
+    },
+    resetForm() {
+      this.form = {
+        ancho: "",
+        alto: "",
+        profundidad: "",
+        volumen: 0,
+        peso: "",
+        tiempo: "",
+        tipo_filamento: "pla",
+        acabados: "false",
+        envio: 0,
+        duracion_pintado: 0,
+        tipo_acabado: "mate",
+        numero_colores: 0,
+        dificultad_acceso: "bajo"
+      };
+    },
     async cotizar() {
       try {
         const response = await axios.post("http://localhost:5000/cotizar", this.form);
@@ -122,7 +277,7 @@ export default {
         return;
       }
 
-      const totalConIVA = this.cotizacion.subtotal * 1.16; // Asumiendo un IVA del 16%
+      const totalConIVA = this.cotizacion.total_final; // Usamos el total final de la cotización
 
       // Verificar y crear el estado del pedido si no existe
       let estadoId;
@@ -216,38 +371,29 @@ export default {
   },
   computed: {
     totalConIVA() {
-      return this.cotizacion ? this.cotizacion.subtotal * 1.16 : 0;
+      return this.cotizacion ? this.cotizacion.total_final : 0;
     }
   }
 };
 </script>
 
 <style>
-form {
-  display: flex;
-  flex-direction: column;
-  max-width: 400px;
+@import "https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css";
+
+.form {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: #f5f5f5;
+  border-radius: 8px;
+  box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
 }
-label {
-  margin-top: 10px;
+
+.modal-content .box {
+  padding: 2rem;
 }
-button {
-  margin-top: 20px;
-}
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.modal-content {
-  background: white;
-  padding: 20px;
-  border-radius: 5px;
+
+.acabados-fields {
+  margin-top: 1rem;
 }
 </style>

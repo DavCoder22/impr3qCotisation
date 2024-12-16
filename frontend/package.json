@@ -10,6 +10,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.47.3",
     "axios": "^1.7.9",
+    "cors": "^2.8.5",
     "vue": "^2.6.11",
     "vue-router": "^3.6.5"
   },

@@ -40,7 +40,7 @@
       <div class="field">
         <label class="label">Tiempo de impresión (horas):</label>
         <div class="control">
-          <input type="number" v-model.number="form.tiempo" required class="input">
+          <input type="text" v-model="form.tiempo" required @input="validarTiempo" class="input">
         </div>
       </div>
 
@@ -48,7 +48,7 @@
         <label class="label">Tipo de filamento:</label>
         <div class="control">
           <div class="select">
-            <select v-model="form.tipo_filamento" required class="input">
+            <select v-model="form.tipo_filamento" required @change="setPrecioFilamento" class="input">
               <option value="pla">PLA</option>
               <option value="ptge">PTGE</option>
               <option value="abs">ABS</option>
@@ -81,7 +81,7 @@
         <div class="field">
           <label class="label">Duración de pintado (horas):</label>
           <div class="control">
-            <input type="number" v-model.number="form.duracion_pintado" required class="input">
+            <input type="number" v-model.number="form.duracion_pintado" required @input="validarDuracionPintado" class="input">
           </div>
         </div>
 
@@ -101,7 +101,7 @@
         <div class="field">
           <label class="label">Número de colores:</label>
           <div class="control">
-            <input type="number" v-model.number="form.numero_colores" required class="input">
+            <input type="number" v-model.number="form.numero_colores" required @input="validarNumeroColores" class="input">
           </div>
         </div>
 
@@ -151,14 +151,17 @@
             <div class="field">
               <label class="label">Correo:</label>
               <div class="control">
-                <input type="email" v-model="cliente.email" required @input="autocompletarCliente" class="input">
+                <input type="text" v-model="cliente.email" required class="input">
+                <p v-if="emailError" class="help is-danger">{{ emailError }}</p>
               </div>
             </div>
 
             <div class="field">
               <label class="label">Teléfono:</label>
               <div class="control">
-                <input type="text" v-model="cliente.telefono" required @input="autocompletarCliente" class="input">
+                <span>+593</span>
+                <input type="text" v-model="cliente.telefono" required @input="validarTelefono" class="input" placeholder="Número de teléfono">
+                <p v-if="telefonoError" class="help is-danger">{{ telefonoError }}</p>
               </div>
             </div>
 
@@ -212,7 +215,10 @@ export default {
         nombre: "",
         whatsapp: "",
       },
-      error: null
+      error: null,
+      emailError: "",
+      telefonoError: "",
+      precio_filamento_gramo: 0
     };
   },
   methods: {
@@ -226,6 +232,51 @@ export default {
         this.form.numero_colores = 0;
         this.form.dificultad_acceso = "bajo";
       }
+    },
+    setPrecioFilamento() {
+      const costos_filamento = {
+        pla: 0.03, // Ejemplo de costo por gramo
+        ptge: 0.04,
+        abs: 0.05,
+        tpu: 0.06
+      };
+      this.precio_filamento_gramo = costos_filamento[this.form.tipo_filamento];
+    },
+    validarTiempo() {
+      const tiempoRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
+      if (!tiempoRegex.test(this.form.tiempo)) {
+        this.form.tiempo = "";
+        alert("El tiempo de impresión debe ser un número con opción de fracción de hora.");
+      }
+    },
+    validarDuracionPintado() {
+      if (this.form.duracion_pintado <= 0) {
+        this.form.duracion_pintado = "";
+        alert("La duración de pintado no puede ser 0.");
+      }
+    },
+    validarNumeroColores() {
+      if (this.form.numero_colores <= 0) {
+        this.form.numero_colores = "";
+        alert("El número de colores no puede ser 0.");
+      }
+    },
+    validarTelefono() {
+      const telefonoRegex = /^[0-9]+$/;
+      if (!telefonoRegex.test(this.cliente.telefono)) {
+        this.telefonoError = "El número de teléfono debe contener solo números.";
+      } else {
+        this.telefonoError = "";
+      }
+    },
+    validarCorreo() {
+      const correoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!correoRegex.test(this.cliente.email)) {
+        this.emailError = "El correo electrónico no es válido.";
+        return false;
+      }
+      this.emailError = "";
+      return true;
     },
     resetForm() {
       this.form = {
@@ -246,7 +297,11 @@ export default {
     },
     async cotizar() {
       try {
-        const response = await axios.post("http://localhost:5000/cotizar", this.form);
+        console.log("Datos enviados:", this.form);
+        const response = await axios.post("http://localhost:5000/cotizar", {
+          ...this.form,
+          precio_filamento_gramo: this.precio_filamento_gramo
+        });
         this.cotizacion = response.data;
         this.error = null;
       } catch (error) {
@@ -265,6 +320,11 @@ export default {
       return email.split('@')[0];
     },
     async enviarPedido() {
+      if (!this.validarCorreo() || this.telefonoError) {
+        alert("Por favor, corrija los errores en el formulario.");
+        return;
+      }
+
       if (!this.cotizacion) {
         console.error("No hay cotización disponible.");
         alert("No hay cotización disponible.");
@@ -359,10 +419,16 @@ export default {
       };
 
       try {
-        const { error } = await supabase.from("pedidos").insert([pedido]);
+        const { data, error } = await supabase.from("pedidos").insert([pedido]).select();
         if (error) throw error;
         alert("Pedido guardado exitosamente.");
         this.showModal = false;
+
+        // Redirigir a WhatsApp Business
+        const pedidoId = data[0].id;
+        const whatsappMessage = `Quiero confirmar mi compra. ID del pedido: ${pedidoId}`;
+        const whatsappURL = `https://wa.me/593995100326?text=${encodeURIComponent(whatsappMessage)}`;
+        window.open(whatsappURL, '_blank');
       } catch (error) {
         console.error("Error al guardar el pedido:", error);
         alert("No se pudo guardar el pedido.");

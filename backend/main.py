@@ -25,6 +25,10 @@ def cotizar_endpoint():
             data['dificultad_acceso']
         )
         return jsonify(factura)
+    except KeyError as e:
+        return jsonify({"error": f"Campo faltante: {e}"}), 400
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

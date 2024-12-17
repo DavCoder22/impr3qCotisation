@@ -128,26 +128,10 @@ export default {
         this.estados = data;
       }
     },
-    async updatePedido(pedido) {
-      const { data, error } = await supabase
-        .from('pedidos')
-        .update([pedido])
-        .eq('id', pedido.id);
-      if (error) {
-        console.error('Error al actualizar el pedido:', error);
-      }
-      this.recalcularPrecio(pedido);
-    },
-    async updateEstado(pedido) {
-      const { data, error } = await supabase
-        .from('pedidos')
-        .update([{ estado_id: pedido.estado_id }])
-        .eq('id', pedido.id);
-      if (error) {
-        console.error('Error al actualizar el estado del pedido:', error);
-      }
-    },
     async savePedido(pedido) {
+      // Recalcular el precio antes de guardar
+      await this.recalcularPrecio(pedido);
+
       const { data, error } = await supabase
         .from('pedidos')
         .update([pedido])

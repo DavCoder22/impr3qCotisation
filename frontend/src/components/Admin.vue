@@ -103,7 +103,6 @@ export default {
         this.loadPedidos();
         this.loadEstados();
         this.startSessionTimeout();
-        this.startKeepAlive();
       } else {
         alert('Contraseña incorrecta');
       }
@@ -177,22 +176,16 @@ export default {
       this.password = '';
     },
     startSessionTimeout() {
-      this.sessionTimeout = setInterval(() => {
-        if (confirm('¿Sigues atendiendo?')) {
-          this.startSessionTimeout();
-        } else {
-          this.logout();
-        }
-      }, 1200000); // 20 minutos
+      this.sessionTimeout = setTimeout(() => {
+        this.showKeepAlivePrompt();
+      }, 1140000); // 19 minutos
     },
-    startKeepAlive() {
-      this.keepAliveInterval = setInterval(() => {
-        if (confirm('¿Sigues atendiendo?')) {
-          this.startKeepAlive();
-        } else {
-          this.logout();
-        }
-      }, 15000); // 15 segundos
+    showKeepAlivePrompt() {
+      if (confirm('¿Sigues atendiendo?')) {
+        this.startSessionTimeout();
+      } else {
+        this.logout();
+      }
     }
   }
 };

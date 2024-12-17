@@ -213,7 +213,6 @@ export default {
         email: "",
         telefono: "",
         nombre: "",
-        whatsapp: "",
       },
       error: null,
       emailError: "",
@@ -314,7 +313,6 @@ export default {
     },
     autocompletarCliente() {
       this.cliente.nombre = this.extractNameFromEmail(this.cliente.email);
-      this.cliente.whatsapp = this.cliente.telefono;
     },
     extractNameFromEmail(email) {
       return email.split('@')[0];
@@ -390,7 +388,6 @@ export default {
             nombre: this.cliente.nombre,
             email: this.cliente.email,
             telefono: this.cliente.telefono,
-            whatsapp: this.cliente.whatsapp,
           }]);
 
         if (errorNuevoCliente) {

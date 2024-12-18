@@ -81,7 +81,6 @@
 </template>
 
 <script>
-import { supabase } from '@/supabase'; // Importa Supabase desde el archivo supabase.js usando una ruta relativa
 import axios from 'axios';
 
 export default {
@@ -108,37 +107,32 @@ export default {
       }
     },
     async loadPedidos() {
-      const { data, error } = await supabase
-        .from('pedidos')
-        .select('*');
-      if (error) {
+      try {
+        const response = await axios.get('http://localhost:5000/pedidos');
+        this.pedidos = response.data;
+      } catch (error) {
         console.error('Error al cargar los pedidos:', error);
-      } else {
-        this.pedidos = data;
       }
     },
     async loadEstados() {
-      const { data, error } = await supabase
-        .from('estados_pedido')
-        .select('*');
-      if (error) {
+      try {
+        const response = await axios.get('http://localhost:5000/estados_pedido');
+        this.estados = response.data;
+      } catch (error) {
         console.error('Error al cargar los estados:', error);
-      } else {
-        this.estados = data;
       }
     },
     async savePedido(pedido) {
       // Recalcular el precio antes de guardar
       await this.recalcularPrecio(pedido);
 
-      const { data, error } = await supabase
-        .from('pedidos')
-        .update([pedido])
-        .eq('id', pedido.id);
-      if (error) {
+      try {
+        const response = await axios.put(`http://localhost:5000/pedidos/${pedido.id}`, pedido);
+        if (response.status === 200) {
+          alert('Pedido guardado exitosamente.');
+        }
+      } catch (error) {
         console.error('Error al guardar el pedido:', error);
-      } else {
-        alert('Pedido guardado exitosamente.');
       }
     },
     async recalcularPrecio(pedido) {
@@ -159,14 +153,13 @@ export default {
       }
     },
     async deletePedido(id) {
-      const { error } = await supabase
-        .from('pedidos')
-        .delete()
-        .eq('id', id);
-      if (error) {
+      try {
+        const response = await axios.delete(`http://localhost:5000/pedidos/${id}`);
+        if (response.status === 200) {
+          this.pedidos = this.pedidos.filter(pedido => pedido.id !== id);
+        }
+      } catch (error) {
         console.error('Error al eliminar el pedido:', error);
-      } else {
-        this.pedidos = this.pedidos.filter(pedido => pedido.id !== id);
       }
     },
     logout() {
